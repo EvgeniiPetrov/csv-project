@@ -1,0 +1,211 @@
+{
+  "measurements_clean.csv": {
+    "total_records": 100,
+    "valid_records": 100,
+    "invalid_records": 0,
+    "invalid_lines": [],
+    "expected_report": {
+      "P101": {
+        "count": 34,
+        "pressure_min": 0.432,
+        "pressure_max": 0.602,
+        "pressure_avg": "0.512",
+        "temperature_avg": "37.865"
+      },
+      "P102": {
+        "count": 33,
+        "pressure_min": 0.583,
+        "pressure_max": 0.751,
+        "pressure_avg": "0.669",
+        "temperature_avg": "43.352"
+      },
+      "P103": {
+        "count": 33,
+        "pressure_min": 0.723,
+        "pressure_max": 0.899,
+        "pressure_avg": "0.809",
+        "temperature_avg": "47.830"
+      }
+    }
+  },
+  "measurements_minor_errors.csv": {
+    "total_records": 100,
+    "valid_records": 95,
+    "invalid_records": 5,
+    "invalid_lines": [
+      {
+        "csv_line": 10,
+        "error_type": "text_temperature"
+      },
+      {
+        "csv_line": 33,
+        "error_type": "empty_temperature"
+      },
+      {
+        "csv_line": 74,
+        "error_type": "empty_pressure"
+      },
+      {
+        "csv_line": 95,
+        "error_type": "text_pressure"
+      },
+      {
+        "csv_line": 97,
+        "error_type": "high_pressure"
+      }
+    ],
+    "expected_report": {
+      "P101": {
+        "count": 32,
+        "pressure_min": 0.432,
+        "pressure_max": 0.602,
+        "pressure_avg": "0.510",
+        "temperature_avg": "37.753"
+      },
+      "P102": {
+        "count": 32,
+        "pressure_min": 0.583,
+        "pressure_max": 0.751,
+        "pressure_avg": "0.667",
+        "temperature_avg": "43.359"
+      },
+      "P103": {
+        "count": 31,
+        "pressure_min": 0.723,
+        "pressure_max": 0.899,
+        "pressure_avg": "0.813",
+        "temperature_avg": "47.819"
+      }
+    }
+  },
+  "measurements_bad.csv": {
+    "total_records": 100,
+    "valid_records": 75,
+    "invalid_records": 25,
+    "invalid_lines": [
+      {
+        "csv_line": 11,
+        "error_type": "text_pressure"
+      },
+      {
+        "csv_line": 12,
+        "error_type": "empty_pressure"
+      },
+      {
+        "csv_line": 15,
+        "error_type": "low_temperature"
+      },
+      {
+        "csv_line": 18,
+        "error_type": "empty_pump_id"
+      },
+      {
+        "csv_line": 23,
+        "error_type": "invalid_date"
+      },
+      {
+        "csv_line": 24,
+        "error_type": "low_temperature"
+      },
+      {
+        "csv_line": 26,
+        "error_type": "empty_pressure"
+      },
+      {
+        "csv_line": 39,
+        "error_type": "text_temperature"
+      },
+      {
+        "csv_line": 40,
+        "error_type": "high_pressure"
+      },
+      {
+        "csv_line": 41,
+        "error_type": "invalid_date"
+      },
+      {
+        "csv_line": 42,
+        "error_type": "empty_pressure"
+      },
+      {
+        "csv_line": 47,
+        "error_type": "text_pressure"
+      },
+      {
+        "csv_line": 48,
+        "error_type": "low_temperature"
+      },
+      {
+        "csv_line": 50,
+        "error_type": "text_temperature"
+      },
+      {
+        "csv_line": 52,
+        "error_type": "high_pressure"
+      },
+      {
+        "csv_line": 53,
+        "error_type": "text_temperature"
+      },
+      {
+        "csv_line": 58,
+        "error_type": "empty_pump_id"
+      },
+      {
+        "csv_line": 68,
+        "error_type": "invalid_date"
+      },
+      {
+        "csv_line": 71,
+        "error_type": "empty_temperature"
+      },
+      {
+        "csv_line": 76,
+        "error_type": "empty_temperature"
+      },
+      {
+        "csv_line": 78,
+        "error_type": "text_pressure"
+      },
+      {
+        "csv_line": 84,
+        "error_type": "empty_temperature"
+      },
+      {
+        "csv_line": 86,
+        "error_type": "empty_pressure"
+      },
+      {
+        "csv_line": 93,
+        "error_type": "high_pressure"
+      },
+      {
+        "csv_line": 97,
+        "error_type": "empty_pump_id"
+      }
+    ],
+    "expected_report": {
+      "P101": {
+        "count": 24,
+        "pressure_min": 0.441,
+        "pressure_max": 0.602,
+        "pressure_avg": "0.513",
+        "temperature_avg": "37.958"
+      },
+      "P102": {
+        "count": 23,
+        "pressure_min": 0.583,
+        "pressure_max": 0.751,
+        "pressure_avg": "0.676",
+        "temperature_avg": "43.283"
+      },
+      "P103": {
+        "count": 28,
+        "pressure_min": 0.723,
+        "pressure_max": 0.899,
+        "pressure_avg": "0.805",
+        "temperature_avg": "47.982"
+      }
+    }
+  }
+}
