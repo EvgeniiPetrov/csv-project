@@ -1,4 +1,5 @@
 import csv
+import math
 import os
 import sys
 from datetime import datetime
@@ -28,6 +29,10 @@ class PressureMpaIsNotInRange(Exception):
     pass
 
 
+class TemperatureCIsNotInRange(Exception):
+    pass
+
+
 def error_print_and_exit_1(err: Exception) -> None:
     print(f"Ошибка: {err}")
     sys.exit(1)
@@ -39,18 +44,34 @@ def check_not_zero_file_length(file_for_check: str) -> bool:
 
 def is_number(value: str) -> bool:
     try:
-        float(value)
+        if (float(value) == math.inf) or (float(value) == -math.inf):
+            return False
+        if math.isnan(float(value)):  # noqa
+            return False
         return True
     except ValueError:
         return False
 
 
+def check_is_wrong_temperature(temperature_c_for_check: str, row_number: int) -> bool:
+    ready_for_check = temperature_c_for_check.strip()
+    if not is_number(ready_for_check):
+        # print(
+        #     f"Температура (\u2103) в строке {row_number} должно быть числовым значением. ([-40..150] \u2103)"
+        # )
+        return True
+    num_pressure_mpa = float(temperature_c_for_check)
+    result = -40.0 <= num_pressure_mpa <= 150.0
+    return not result
+
+
 def check_is_wrong_pressure(pressure_mpa_for_check: str, row_number: int) -> bool:
     ready_for_check = pressure_mpa_for_check.strip()
     if not is_number(ready_for_check):
-        raise PressureMpaNotDigitError(
-            f"Давление (МПа) в строке {row_number} должно быть числовым значением. ([0..2] МПа)"
-        )
+        # print(
+        #     f"Давление (МПа) в строке {row_number} должно быть числовым значением. ([0..2] МПа)"
+        # )
+        return True
     num_pressure_mpa = float(pressure_mpa_for_check)
     result = 0.0 <= num_pressure_mpa <= 2.0
     return not result
@@ -141,36 +162,57 @@ def main(file_for_cheking: str) -> None:
 
     #  Предварительная проверка перед преобразованием
     #
-    total_wromg_lines: int = 0
+    total_wrong_lines: int = 0
     current_row: int = 0
+    wrong_lines = set()
     for current_row, row in enumerate(rows):
-        offset_current_row = current_row + 1
-        print(f"Проверяем строку №{offset_current_row} {row}")
+        offset_current_row = (
+            current_row + 2
+        )  # +1 для смещения на заголовок и +1 для смещения на 0 индекс
+        # print(f"Проверяем строку №{offset_current_row} {row}")
         error_field_count: int = 0
-        if check_is_wrong_timestamp(row.get("timestamp")):
+
+        timestamp: str = row.get("timestamp")
+        if check_is_wrong_timestamp(timestamp):
             print(
                 f"Значение {row.get('timestamp')} в строке №{offset_current_row} {row} не соответсвует формату YYYY-MM-DD HH:MM:SS"
             )
             error_field_count += 1
-
-        if check_is_wrong_pump_id(row.get("pump_id")):
+        pump_id: str = row.get("pump_id")
+        if check_is_wrong_pump_id(pump_id):
             print(
                 f"Значение {row.get('pump_id')} в строке №{offset_current_row} {row} не должно быть пустым или состоять только из пробелов"
             )
             error_field_count += 1
         if error_field_count:
-            total_wromg_lines += 1
-        if check_is_wrong_pressure(row.get("pressure_mpa"), current_row):
-            raise PressureMpaIsNotInRange(
-                f"Давление (МПа) в строке №{offset_current_row} должно быть в диапазоне [0..2] МПа"
+            total_wrong_lines += 1
+        pressure_mpa: str = row.get("pressure_mpa")
+        if check_is_wrong_pressure(pressure_mpa, current_row):
+            print(
+                f"Давление {pressure_mpa}(МПа) в строке {offset_current_row} должно быть в диапазоне [0..2] МПа"
             )
+            error_field_count += 1
+        temperature_c: str = row.get("temperature_c")
+        if check_is_wrong_temperature(temperature_c, current_row):
+            print(
+                f"Температура (\u2103) в строке {offset_current_row} должно быть в диапазоне [-40..150] \u2103)"
+            )
+            error_field_count += 1
 
-    print(f"Общее число не коррестных строк: {total_wromg_lines}")
+        if error_field_count:
+            wrong_lines.add(offset_current_row)
+
+    print(f"Общее число не коррестных строк: {total_wrong_lines}")
+    print(f"Номера не корректных строк: {wrong_lines}")
 
 
 if __name__ == "__main__":
     try:
-        input_csv_file: str = "src/csv_project/csv_training_tz01/measurements_clean.csv"
+        # measurements_clean.csv
+        # measurements_minor_errors.csv
+        input_csv_file: str = (
+            "src/csv_project/csv_training_tz01/measurements_minor_errors.csv"
+        )
         main(input_csv_file)
     except FileNotFoundError as err:
         print(f"Файл с данными для проверки не найден.\nОшибка: {err.strerror}")
@@ -187,5 +229,7 @@ if __name__ == "__main__":
     except PressureMpaIsNotInRange as err:
         error_print_and_exit_1(err)
     except ColumnCountError as err:
+        error_print_and_exit_1(err)
+    except TemperatureCIsNotInRange as err:
         error_print_and_exit_1(err)
     sys.exit(0)
