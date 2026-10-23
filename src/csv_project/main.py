@@ -60,8 +60,8 @@ def check_is_wrong_temperature(temperature_c_for_check: str, row_number: int) ->
         #     f"Температура (\u2103) в строке {row_number} должно быть числовым значением. ([-40..150] \u2103)"
         # )
         return True
-    num_pressure_mpa = float(temperature_c_for_check)
-    result = -40.0 <= num_pressure_mpa <= 150.0
+    num_temperature = float(temperature_c_for_check)
+    result = -40.0 <= num_temperature <= 150.0
     return not result
 
 
@@ -96,9 +96,10 @@ def check_is_wrong_pump_id(pump_id_for_check: str | None) -> bool:
         return True
     if len(pump_id_for_check.strip()) == 0:
         return True
+    # мои добавления
     if (  # noqa
         (pump_id_for_check.lower() == "none")
-        or (pump_id_for_check.lower() == "error")
+        # or (pump_id_for_check.lower() == "error")
         or (pump_id_for_check.lower() == "nan")
     ):
         return True
