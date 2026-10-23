@@ -184,8 +184,6 @@ def main(file_for_cheking: str) -> None:
                 f"Значение {row.get('pump_id')} в строке №{offset_current_row} {row} не должно быть пустым или состоять только из пробелов"
             )
             error_field_count += 1
-        if error_field_count:
-            total_wrong_lines += 1
         pressure_mpa: str = row.get("pressure_mpa")
         if check_is_wrong_pressure(pressure_mpa, current_row):
             print(
@@ -200,6 +198,7 @@ def main(file_for_cheking: str) -> None:
             error_field_count += 1
 
         if error_field_count:
+            total_wrong_lines += 1
             wrong_lines.add(offset_current_row)
 
     print(f"Общее число не коррестных строк: {total_wrong_lines}")
