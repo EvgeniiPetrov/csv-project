@@ -66,7 +66,10 @@ def check_is_wrong_temperature(temperature_c_for_check: str, row_number: int) ->
 
 
 def check_is_wrong_pressure(pressure_mpa_for_check: str, row_number: int) -> bool:
-    ready_for_check = pressure_mpa_for_check.strip()
+    if pressure_mpa_for_check is not None:
+        ready_for_check = pressure_mpa_for_check.strip()
+    else:
+        return True
     if not is_number(ready_for_check):
         # print(
         #     f"Давление (МПа) в строке {row_number} должно быть числовым значением. ([0..2] МПа)"
