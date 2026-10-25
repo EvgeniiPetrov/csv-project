@@ -149,10 +149,34 @@ def check_is_wrong_pump_id(pump_id_for_check: str | None) -> bool:
     return False
 
 
-def check_columns(data_for_check: list[dict]) -> bool:
+# def check_columns(data_for_check: list[dict]) -> bool:
+#     num_of_columns: int = 4
+#     column_counter: int = 0
+#     columns_names = list(data_for_check[0].keys())
+#     if len(columns_names) != num_of_columns:
+#         return False
+#     for column_name in columns_names:
+#         if column_name in [
+#             "timestamp",
+#             "pump_id",
+#             "pressure_mpa",
+#             "temperature_c",
+#         ]:  # timestamp,pump_id,pressure_mpa,temperature_c
+#             column_counter += 1
+
+#     return column_counter == num_of_columns  # Возвращает True или False
+
+
+def check_columns(data_for_check) -> bool:
+    if data_for_check is None:
+        return False
     num_of_columns: int = 4
     column_counter: int = 0
-    columns_names = list(data_for_check[0].keys())
+    # columns_names = list(data_for_check[0].keys())
+    columns_names = data_for_check
+    print("***")
+    print(columns_names)
+    print(f"Количество столбцов: {len(columns_names)}")
     if len(columns_names) != num_of_columns:
         return False
     for column_name in columns_names:
@@ -197,9 +221,11 @@ def main(file_for_cheking: str) -> None:
 
         read = csv.DictReader(file)
         field_names = read.fieldnames
+        print(f"Названия колонок в файле: {field_names}")
+        checked_columns = check_columns(field_names)
         rows: list[dict] = list(read)
 
-    checked_columns = check_columns(rows)
+    # checked_columns = check_columns(rows)
     if checked_columns:
         print(f"Назания колонок соответсвуют заявленным требованиям: {checked_columns}")
         print(
@@ -209,6 +235,7 @@ def main(file_for_cheking: str) -> None:
         raise ColumnCountError("Число столбцов должно быть 4.")
     position_of_wrong_rows: set = check_rows(rows)
     print(f"Повторно: Номера не корректных строк: {position_of_wrong_rows}")
+
     clear_rows: list[dict] = []
     bad_rows: list[dict] = []
     for row_position, row in enumerate(rows):
