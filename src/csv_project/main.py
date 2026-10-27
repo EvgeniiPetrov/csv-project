@@ -174,9 +174,9 @@ def check_columns(data_for_check) -> bool:
     column_counter: int = 0
     # columns_names = list(data_for_check[0].keys())
     columns_names = data_for_check
-    print("***")
-    print(columns_names)
-    print(f"Количество столбцов: {len(columns_names)}")
+    # print("***")
+    # print(columns_names)
+    # print(f"Количество столбцов: {len(columns_names)}")
     if len(columns_names) != num_of_columns:
         return False
     for column_name in columns_names:
@@ -235,6 +235,7 @@ def main(file_for_cheking: str) -> None:
         raise ColumnCountError("Число столбцов должно быть 4.")
     position_of_wrong_rows: set = check_rows(rows)
     print(f"Повторно: Номера не корректных строк: {position_of_wrong_rows}")
+    print("***")
 
     clear_rows: list[dict] = []
     bad_rows: list[dict] = []
@@ -249,6 +250,10 @@ def main(file_for_cheking: str) -> None:
     print("*** The next step is checking the incorrect data. *** ")
     check_rows(bad_rows)
     for row in bad_rows:
+        print(row)
+    print("***")
+    sorted_rows = sorted(rows, key=lambda x: (x["pump_id"], x["timestamp"]))
+    for row in sorted_rows:
         print(row)
 
 
