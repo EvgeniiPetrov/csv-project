@@ -270,21 +270,21 @@ def main(file_for_cheking: str) -> None:
         number_of_dimensions: int = len(pump_id_records)
         print(f"Данные по НА: {pump_id}")
         print(f"Количество корректных измерений: {number_of_dimensions}")
-        min_pressure = min(sorted_rows, key=lambda x: float(x["pressure_mpa"]))
+        min_pressure = min(pump_id_records, key=lambda x: float(x["pressure_mpa"]))
         print(
             f"Минимальное давление: {min_pressure['pressure_mpa']} в {min_pressure['timestamp']}"
         )
-        max_pressure = max(sorted_rows, key=lambda x: float(x["pressure_mpa"]))
+        max_pressure = max(pump_id_records, key=lambda x: float(x["pressure_mpa"]))
         print(
             f"Максимальное давление: {max_pressure['pressure_mpa']} в {max_pressure['timestamp']}"
         )
-        sum_pumps_pressuries = [float(d["pressure_mpa"]) for d in clear_rows]
+        sum_pumps_pressuries = [float(d["pressure_mpa"]) for d in pump_id_records]
         average_pressure = round(
             sum(sum_pumps_pressuries) / len(sum_pumps_pressuries), 3
         )
         print(f"Среднее давление: {average_pressure}")
 
-        sum_pumps_temperatures = [float(d["temperature_c"]) for d in clear_rows]
+        sum_pumps_temperatures = [float(d["temperature_c"]) for d in pump_id_records]
         average_temperature = round(
             sum(sum_pumps_temperatures) / len(sum_pumps_temperatures), 3
         )
