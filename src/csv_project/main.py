@@ -252,9 +252,44 @@ def main(file_for_cheking: str) -> None:
     for row in bad_rows:
         print(row)
     print("***")
-    sorted_rows = sorted(rows, key=lambda x: (x["pump_id"], x["timestamp"]))
-    for row in sorted_rows:
-        print(row)
+    sorted_rows = sorted(clear_rows, key=lambda x: (x["pump_id"], x["timestamp"]))
+    # for row in sorted_rows:
+    #     print(row)
+    uniq_pump_id = list(
+        {row["pump_id"] for row in rows}
+    )  # this is Set (It cintains unique values)
+    print(uniq_pump_id)
+
+    for pump_id in uniq_pump_id:
+        print("***")
+        pump_id_records: list[dict] = list(
+            filter(lambda x: x["pump_id"] == pump_id, sorted_rows)
+        )
+        # for index1, row in enumerate(pump_id_records):
+        #     print(f"{index1}: {row}")
+        number_of_dimensions: int = len(pump_id_records)
+        print(f"Данные по НА: {pump_id}")
+        print(f"Количество корректных измерений: {number_of_dimensions}")
+        min_pressure = min(sorted_rows, key=lambda x: float(x["pressure_mpa"]))
+        print(
+            f"Минимальное давление: {min_pressure['pressure_mpa']} в {min_pressure['timestamp']}"
+        )
+        max_pressure = max(sorted_rows, key=lambda x: float(x["pressure_mpa"]))
+        print(
+            f"Максимальное давление: {max_pressure['pressure_mpa']} в {max_pressure['timestamp']}"
+        )
+        sum_pumps_pressuries = [float(d["pressure_mpa"]) for d in clear_rows]
+        average_pressure = round(
+            sum(sum_pumps_pressuries) / len(sum_pumps_pressuries), 3
+        )
+        print(f"Среднее давление: {average_pressure}")
+
+        sum_pumps_temperatures = [float(d["temperature_c"]) for d in clear_rows]
+        average_temperature = round(
+            sum(sum_pumps_temperatures) / len(sum_pumps_temperatures), 3
+        )
+        print(f"Средняя температура: {average_temperature}")
+        # input()
 
 
 if __name__ == "__main__":
