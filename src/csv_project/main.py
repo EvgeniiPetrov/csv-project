@@ -5,6 +5,10 @@ import sys
 from datetime import datetime
 
 
+class MissingCorrectDataError(Exception):
+    pass
+
+
 class ColumnCountError(Exception):
     pass
 
@@ -245,6 +249,10 @@ def main(file_for_cheking: str) -> None:
             bad_rows.append(row)
         else:
             clear_rows.append(row)
+    if len(clear_rows) == 0:
+        raise MissingCorrectDataError(
+            f"Отсутствуют корректные данные для обработки. \n Количество корректных данных равно {len(clear_rows)}. \n Количество не корректных данных: {len(bad_rows)}"
+        )
     print("*** The next step is checking the filtered  clear data. *** ")
     check_rows(clear_rows)
     print("*** The next step is checking the incorrect data. *** ")
@@ -253,8 +261,6 @@ def main(file_for_cheking: str) -> None:
         print(row)
     print("***")
     sorted_rows = sorted(clear_rows, key=lambda x: (x["pump_id"], x["timestamp"]))
-    # for row in sorted_rows:
-    #     print(row)
     uniq_pump_id = list(
         {row["pump_id"] for row in clear_rows}
     )  # this is Set (It cintains unique values)
@@ -265,9 +271,10 @@ def main(file_for_cheking: str) -> None:
         pump_id_records: list[dict] = list(
             filter(lambda x: x["pump_id"] == pump_id, sorted_rows)
         )
-        # for index1, row in enumerate(pump_id_records):
-        #     print(f"{index1}: {row}")
         number_of_dimensions: int = len(pump_id_records)
+        if number_of_dimensions == 0:
+            print(f"Корректные данные по насосному агрегату {pump_id} отсутсвуют.")
+            continue
         print(f"Данные по НА: {pump_id}")
         print(f"Количество корректных измерений: {number_of_dimensions}")
         min_pressure = min(pump_id_records, key=lambda x: float(x["pressure_mpa"]))
@@ -289,7 +296,6 @@ def main(file_for_cheking: str) -> None:
             sum(sum_pumps_temperatures) / len(sum_pumps_temperatures), 3
         )
         print(f"Средняя температура: {average_temperature}")
-        # input()
 
 
 if __name__ == "__main__":
@@ -306,6 +312,8 @@ if __name__ == "__main__":
         print(f"Расположение: {input_csv_file}")
         sys.exit(1)
     except ZeroFileSizeError as err:
+        error_print_and_exit_1(err)
+    except MissingCorrectDataError as err:
         error_print_and_exit_1(err)
     except FileConsistOnlyFieldnamesError as err:
         error_print_and_exit_1(err)
