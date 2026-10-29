@@ -256,7 +256,7 @@ def main(file_for_cheking: str) -> None:
     # for row in sorted_rows:
     #     print(row)
     uniq_pump_id = list(
-        {row["pump_id"] for row in rows}
+        {row["pump_id"] for row in clear_rows}
     )  # this is Set (It cintains unique values)
     print(uniq_pump_id)
 
