@@ -276,26 +276,26 @@ def main(file_for_cheking: str) -> None:
             print(f"Корректные данные по насосному агрегату {pump_id} отсутсвуют.")
             continue
         print(f"Данные по НА: {pump_id}")
-        print(f"Количество корректных измерений: {number_of_dimensions}")
+        print(f"Количество корректных измерений: {number_of_dimensions} шт.")
         min_pressure = min(pump_id_records, key=lambda x: float(x["pressure_mpa"]))
         print(
-            f"Минимальное давление: {min_pressure['pressure_mpa']} в {min_pressure['timestamp']}"
+            f"Минимальное давление: {min_pressure['pressure_mpa']} МПа в {min_pressure['timestamp']}"
         )
         max_pressure = max(pump_id_records, key=lambda x: float(x["pressure_mpa"]))
         print(
-            f"Максимальное давление: {max_pressure['pressure_mpa']} в {max_pressure['timestamp']}"
+            f"Максимальное давление: {max_pressure['pressure_mpa']} Мпа в {max_pressure['timestamp']}"
         )
         sum_pumps_pressuries = [float(d["pressure_mpa"]) for d in pump_id_records]
         average_pressure = round(
             sum(sum_pumps_pressuries) / len(sum_pumps_pressuries), 3
         )
-        print(f"Среднее давление: {average_pressure}")
+        print(f"Среднее давление: {average_pressure} МПа")
 
         sum_pumps_temperatures = [float(d["temperature_c"]) for d in pump_id_records]
         average_temperature = round(
             sum(sum_pumps_temperatures) / len(sum_pumps_temperatures), 3
         )
-        print(f"Средняя температура: {average_temperature}")
+        print(f"Средняя температура: {average_temperature} \u2103")
 
 
 if __name__ == "__main__":
