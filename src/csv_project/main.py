@@ -1,3 +1,4 @@
+import copy
 import csv
 import math
 import os
@@ -64,9 +65,10 @@ def check_rows(rows_for_check: list[dict]) -> set:
     wrong_lines = set()
     for current_row, row in enumerate(rows_for_check):
         offset_current_row = (
-            current_row + 2
-        )  # +1 для смещения на заголовок и +1 для смещения на 0 индекс
-        # print(f"Проверяем строку №{offset_current_row} {row}")
+            current_row
+            # +1 для смещения на заголовок и +1 для смещения на 0 индекс
+        )
+        print(f"Проверяем строку №{offset_current_row} {row}")
         error_field_count: int = 0
 
         timestamp = row.get("timestamp")
@@ -99,7 +101,8 @@ def check_rows(rows_for_check: list[dict]) -> set:
             wrong_lines.add(current_row)
 
     print(f"Общее число не коррестных строк: {total_wrong_lines}")
-    print(f"Номера не корректных строк: {wrong_lines}")
+    if total_wrong_lines > 0:
+        print(f"Номера не корректных строк: {wrong_lines}")
     return wrong_lines
 
 
@@ -122,7 +125,10 @@ def check_is_wrong_pressure(pressure_mpa_for_check: str, row_number: int) -> boo
         return True
     if not is_number(ready_for_check):
         return True
-    num_pressure_mpa = float(pressure_mpa_for_check)
+    try:
+        num_pressure_mpa = float(pressure_mpa_for_check)
+    except ValueError:
+        return True
     result = 0.0 <= num_pressure_mpa <= 2.0
     return not result
 
@@ -146,29 +152,11 @@ def check_is_wrong_pump_id(pump_id_for_check: str | None) -> bool:
     # мои добавления
     # if (  # noqa
     #     (pump_id_for_check.lower() == "none")
-    #     # or (pump_id_for_check.lower() == "error")
+    # pump_id_for_check.lower() == "error"
     #     or (pump_id_for_check.lower() == "nan")
     # ):
-    #     return True
+    # return True
     return False
-
-
-# def check_columns(data_for_check: list[dict]) -> bool:
-#     num_of_columns: int = 4
-#     column_counter: int = 0
-#     columns_names = list(data_for_check[0].keys())
-#     if len(columns_names) != num_of_columns:
-#         return False
-#     for column_name in columns_names:
-#         if column_name in [
-#             "timestamp",
-#             "pump_id",
-#             "pressure_mpa",
-#             "temperature_c",
-#         ]:  # timestamp,pump_id,pressure_mpa,temperature_c
-#             column_counter += 1
-
-#     return column_counter == num_of_columns  # Возвращает True или False
 
 
 def check_columns(data_for_check) -> bool:
@@ -176,11 +164,7 @@ def check_columns(data_for_check) -> bool:
         return False
     num_of_columns: int = 4
     column_counter: int = 0
-    # columns_names = list(data_for_check[0].keys())
     columns_names = data_for_check
-    # print("***")
-    # print(columns_names)
-    # print(f"Количество столбцов: {len(columns_names)}")
     if len(columns_names) != num_of_columns:
         return False
     for column_name in columns_names:
@@ -220,16 +204,20 @@ def main(file_for_cheking: str) -> None:
             raise FileConsistOnlyFieldnamesError(
                 f"В принятом файле {file_for_cheking} только одна строка."
             )
+        print(f"Количество строк (общее) в файле: {count} шт.")
         file.seek(0)
-        print(f"Количество записей в файле: {count - 1}")
-
         read = csv.DictReader(file)
+        rows: list[dict] = list(read)
+        read_measurements_at_file = len(rows)
+        print(f"Количество записей в файле: {read_measurements_at_file} шт.")
         field_names = read.fieldnames
         print(f"Названия колонок в файле: {field_names}")
         checked_columns = check_columns(field_names)
-        rows: list[dict] = list(read)
+    if len(rows) == 0:
+        raise MissingCorrectDataError(
+            f"Отсутствуют корректные данные для обработки.\n Количество данных равно {len(rows)}."
+        )
 
-    # checked_columns = check_columns(rows)
     if checked_columns:
         print(f"Назания колонок соответсвуют заявленным требованиям: {checked_columns}")
         print(
@@ -251,7 +239,7 @@ def main(file_for_cheking: str) -> None:
             clear_rows.append(row)
     if len(clear_rows) == 0:
         raise MissingCorrectDataError(
-            f"Отсутствуют корректные данные для обработки. \n Количество корректных данных равно {len(clear_rows)}. \n Количество не корректных данных: {len(bad_rows)}"
+            f"Отсутствуют корректные данные для обработки . \n Количество корректных данных равно {len(clear_rows)}. \n Количество не корректных данных: {len(bad_rows)}"
         )
     print("*** The next step is checking the filtered  clear data. *** ")
     check_rows(clear_rows)
@@ -260,40 +248,48 @@ def main(file_for_cheking: str) -> None:
     for row in bad_rows:
         print(row)
     print("***")
-    sorted_rows = sorted(clear_rows, key=lambda x: (x["pump_id"], x["timestamp"]))
     uniq_pump_id = list(
         {row["pump_id"] for row in clear_rows}
     )  # this is Set (It cintains unique values)
     print(uniq_pump_id)
+    sorted_rows_float = copy.deepcopy(clear_rows)
+    for i, row in enumerate(clear_rows):
+        sorted_rows_float[i]["pressure_mpa"] = float(row["pressure_mpa"])
+        sorted_rows_float[i]["temperature_c"] = float(row["temperature_c"])
+    # print("-----#####------")
+    # for row in sorted_rows_float:
+    #     print(row)
 
     for pump_id in uniq_pump_id:
-        print("***")
+        # print("***")
         pump_id_records: list[dict] = list(
-            filter(lambda x: x["pump_id"] == pump_id, sorted_rows)
+            filter(lambda x: x["pump_id"] == pump_id, sorted_rows_float)
         )
+        # for row in pump_id_records:
+        #     print(row)
         number_of_dimensions: int = len(pump_id_records)
         if number_of_dimensions == 0:
             print(f"Корректные данные по насосному агрегату {pump_id} отсутсвуют.")
             continue
         print(f"Данные по НА: {pump_id}")
         print(f"Количество корректных измерений: {number_of_dimensions} шт.")
-        min_pressure = min(pump_id_records, key=lambda x: float(x["pressure_mpa"]))
+        min_pressure = min(pump_id_records, key=lambda x: x["pressure_mpa"])
         print(
             f"Минимальное давление: {min_pressure['pressure_mpa']} МПа в {min_pressure['timestamp']}"
         )
-        max_pressure = max(pump_id_records, key=lambda x: float(x["pressure_mpa"]))
+        max_pressure = max(pump_id_records, key=lambda x: x["pressure_mpa"])
         print(
             f"Максимальное давление: {max_pressure['pressure_mpa']} Мпа в {max_pressure['timestamp']}"
         )
-        sum_pumps_pressuries = [float(d["pressure_mpa"]) for d in pump_id_records]
-        average_pressure = round(
-            sum(sum_pumps_pressuries) / len(sum_pumps_pressuries), 3
+        pumps_pressuries: list[float] = [d["pressure_mpa"] for d in pump_id_records]
+        average_pressure: float = round(
+            sum(pumps_pressuries) / len(pumps_pressuries), 3
         )
         print(f"Среднее давление: {average_pressure} МПа")
 
-        sum_pumps_temperatures = [float(d["temperature_c"]) for d in pump_id_records]
-        average_temperature = round(
-            sum(sum_pumps_temperatures) / len(sum_pumps_temperatures), 3
+        pumps_temperatures: list[float] = [d["temperature_c"] for d in pump_id_records]
+        average_temperature: float = round(
+            sum(pumps_temperatures) / len(pumps_temperatures), 3
         )
         print(f"Средняя температура: {average_temperature} \u2103")
 
@@ -303,9 +299,7 @@ if __name__ == "__main__":
         # measurements_clean.csv
         # measurements_minor_errors.csv
         # measurements_bad.csv
-        input_csv_file: str = (
-            "src/csv_project/csv_training_tz01/measurements_minor_errors.csv"
-        )
+        input_csv_file: str = "src/csv_project/csv_training_tz01/measurements_bad.csv"
         main(input_csv_file)
     except FileNotFoundError as err:
         print(f"Файл с данными для проверки не найден.\nОшибка: {err.strerror}")
