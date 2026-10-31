@@ -162,10 +162,10 @@ def check_is_wrong_pump_id(pump_id_for_check: str | None) -> bool:
 def check_columns(data_for_check) -> bool:
     if data_for_check is None:
         return False
-    num_of_columns: int = 4
+    min_num_of_columns: int = 4
     column_counter: int = 0
     columns_names = data_for_check
-    if len(columns_names) != num_of_columns:
+    if len(columns_names) < (int(min_num_of_columns)):
         return False
     for column_name in columns_names:
         if column_name in [
@@ -176,7 +176,7 @@ def check_columns(data_for_check) -> bool:
         ]:  # timestamp,pump_id,pressure_mpa,temperature_c
             column_counter += 1
 
-    return column_counter == num_of_columns  # Возвращает True или False
+    return not column_counter < (min_num_of_columns)  # Возвращает True или False
 
 
 def main(file_for_cheking: str) -> None:
@@ -224,7 +224,7 @@ def main(file_for_cheking: str) -> None:
             "Заявленные имена столбцов: timestamp, pump_id, pressure_mpa, temperature_c \n"
         )
     else:
-        raise ColumnCountError("Число столбцов должно быть 4.")
+        raise ColumnCountError("Число столбцов должно быть более 4.")
     position_of_wrong_rows: set = check_rows(rows)
     print(f"Повторно: Номера не корректных строк: {position_of_wrong_rows}")
     print("***")
@@ -299,7 +299,9 @@ if __name__ == "__main__":
         # measurements_clean.csv
         # measurements_minor_errors.csv
         # measurements_bad.csv
-        input_csv_file: str = "src/csv_project/csv_training_tz01/measurements_bad.csv"
+        input_csv_file: str = (
+            "src/csv_project/csv_training_tz01/measurements_minor_errors.csv"
+        )
         main(input_csv_file)
     except FileNotFoundError as err:
         print(f"Файл с данными для проверки не найден.\nОшибка: {err.strerror}")
