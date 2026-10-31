@@ -224,7 +224,9 @@ def main(file_for_cheking: str) -> None:
             "Заявленные имена столбцов: timestamp, pump_id, pressure_mpa, temperature_c \n"
         )
     else:
-        raise ColumnCountError("Число столбцов должно быть более 4.")
+        raise ColumnCountError(
+            "Число столбцов должно быть 4 (основные) или более столбцов."
+        )
     position_of_wrong_rows: set = check_rows(rows)
     print(f"Повторно: Номера не корректных строк: {position_of_wrong_rows}")
     print("***")
