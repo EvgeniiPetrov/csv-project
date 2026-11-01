@@ -248,17 +248,14 @@ def main(report_filename: str, file_for_cheking: str) -> None:
         raise MissingCorrectDataError(
             f"Отсутствуют корректные данные для обработки . \n Количество корректных данных равно {len(clear_rows)}. \n Количество не корректных данных: {len(bad_rows)}"
         )
-    print("*** The next step is checking the filtered  clear data. *** ")
-    print("*** The next step is checking the incorrect data. *** ")
     print("Некорректные строки:")
     for row in bad_rows:
         print(row)
-    print("***")
     uniq_pump_id = list(
         {row["pump_id"] for row in clear_rows}
     )  # this is Set (It cintains unique values)
     uniq_pump_id.sort()
-    print(uniq_pump_id)
+    print(f"Уникальные идентификаторы насосов: {uniq_pump_id}")
     sorted_rows_float = copy.deepcopy(clear_rows)
     for i, row in enumerate(clear_rows):
         sorted_rows_float[i]["pressure_mpa"] = float(row["pressure_mpa"])
@@ -290,7 +287,6 @@ def main(report_filename: str, file_for_cheking: str) -> None:
             sum(pumps_temperatures) / len(pumps_temperatures), 3
         )
         report_row["temperature_avg"] = average_temperature
-        print(report_row)
         report_rows.append(report_row)
 
     if report_rows:
