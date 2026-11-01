@@ -63,20 +63,6 @@ def write_csv_report(report_filename: str, report_rows: list[dict]) -> None:
             writer_to_file.writerow(row)
 
 
-def write_fieldnames_to_csv_report(report_filename: str) -> None:
-    fieldnames = [
-        "pump_id",
-        "count",
-        "pressure_min",
-        "pressure_max",
-        "pressure_avg",
-        "temperature_avg",
-    ]
-    with open(report_filename, "w", encoding="utf-8", newline="") as report_pumps_csv:
-        writer_to_file = csv.DictWriter(report_pumps_csv, fieldnames=fieldnames)
-        writer_to_file.writeheader()
-
-
 def is_number(value: str) -> bool:
     try:
         if (float(value) == math.inf) or (float(value) == -math.inf):
@@ -98,7 +84,6 @@ def check_rows(rows_for_check: list[dict]) -> set:
             current_row
             # +1 для смещения на заголовок и +1 для смещения на 0 индекс
         )
-        print(f"Проверяем строку №{offset_current_row} {row}")
         error_field_count: int = 0
 
         timestamp = row.get("timestamp")
@@ -179,13 +164,6 @@ def check_is_wrong_pump_id(pump_id_for_check: str | None) -> bool:
         return True
     if len(pump_id_for_check.strip()) == 0:  # noqa
         return True
-    # мои добавления
-    # if (  # noqa
-    #     (pump_id_for_check.lower() == "none")
-    # pump_id_for_check.lower() == "error"
-    #     or (pump_id_for_check.lower() == "nan")
-    # ):
-    # return True
     return False
 
 
@@ -258,14 +236,11 @@ def main(report_filename: str, file_for_cheking: str) -> None:
             "Число столбцов должно быть 4 (основные) или более столбцов."
         )
     position_of_wrong_rows: set = check_rows(rows)
-    print(f"Повторно: Номера не корректных строк: {position_of_wrong_rows}")
-    print("***")
 
     clear_rows: list[dict] = []
     bad_rows: list[dict] = []
     for row_position, row in enumerate(rows):
         if row_position in position_of_wrong_rows:
-            print(f"Wrong string number is {row_position}")
             bad_rows.append(row)
         else:
             clear_rows.append(row)
@@ -274,9 +249,8 @@ def main(report_filename: str, file_for_cheking: str) -> None:
             f"Отсутствуют корректные данные для обработки . \n Количество корректных данных равно {len(clear_rows)}. \n Количество не корректных данных: {len(bad_rows)}"
         )
     print("*** The next step is checking the filtered  clear data. *** ")
-    check_rows(clear_rows)
     print("*** The next step is checking the incorrect data. *** ")
-    check_rows(bad_rows)
+    print("Некорректные строки:")
     for row in bad_rows:
         print(row)
     print("***")
@@ -289,57 +263,38 @@ def main(report_filename: str, file_for_cheking: str) -> None:
     for i, row in enumerate(clear_rows):
         sorted_rows_float[i]["pressure_mpa"] = float(row["pressure_mpa"])
         sorted_rows_float[i]["temperature_c"] = float(row["temperature_c"])
-    # print("-----#####------")
-    # for row in sorted_rows_float:
-    #     print(row)
-
     report_rows: list[dict] = []
     for pump_id in uniq_pump_id:
-        # print("***")
         report_row: dict = {}
         pump_id_records: list[dict] = list(
             filter(lambda x: x["pump_id"] == pump_id, sorted_rows_float)
         )
-        # for row in pump_id_records:
-        #     print(row)
         number_of_dimensions: int = len(pump_id_records)
         if number_of_dimensions == 0:
             print(f"Корректные данные по насосному агрегату {pump_id} отсутсвуют.")
             continue
-        print(f"Данные по НА: {pump_id}")
         report_row["pump_id"] = pump_id
-        print(f"Количество корректных измерений: {number_of_dimensions} шт.")
         report_row["count"] = number_of_dimensions
         min_pressure = min(pump_id_records, key=lambda x: x["pressure_mpa"])
-        print(
-            f"Минимальное давление: {min_pressure['pressure_mpa']} МПа в {min_pressure['timestamp']}"
-        )
         report_row["pressure_min"] = min_pressure["pressure_mpa"]
         max_pressure = max(pump_id_records, key=lambda x: x["pressure_mpa"])
-        print(
-            f"Максимальное давление: {max_pressure['pressure_mpa']} Мпа в {max_pressure['timestamp']}"
-        )
         report_row["pressure_max"] = max_pressure["pressure_mpa"]
         pumps_pressuries: list[float] = [d["pressure_mpa"] for d in pump_id_records]
         average_pressure: float = round(
             sum(pumps_pressuries) / len(pumps_pressuries), 3
         )
-        print(f"Среднее давление: {average_pressure} МПа")
         report_row["pressure_avg"] = average_pressure
 
         pumps_temperatures: list[float] = [d["temperature_c"] for d in pump_id_records]
         average_temperature: float = round(
             sum(pumps_temperatures) / len(pumps_temperatures), 3
         )
-        print(f"Средняя температура: {average_temperature} \u2103")
         report_row["temperature_avg"] = average_temperature
         print(report_row)
         report_rows.append(report_row)
 
     if report_rows:
         write_csv_report(report_filename, report_rows=report_rows)
-    for row in report_rows:
-        print(row)
     print("Processing completed.")
     print(f"Total records: {read_measurements_at_file}")
     print(f"Valid records: {len(clear_rows)}")
@@ -353,9 +308,7 @@ if __name__ == "__main__":
         # measurements_clean.csv
         # measurements_minor_errors.csv
         # measurements_bad.csv
-        input_csv_file: str = (
-            "src/csv_project/csv_training_tz01/measurements_minor_errors.csv"
-        )
+        input_csv_file: str = "src/csv_project/csv_training_tz01/measurements_bad.csv"
         report_filename: str = "report.csv"
         main(report_filename, input_csv_file)
     except FileNotFoundError as err:
