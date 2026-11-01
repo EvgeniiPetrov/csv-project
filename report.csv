@@ -1,0 +1,4 @@
+pump_id,count,pressure_min,pressure_max,pressure_avg,temperature_avg
+P101,24,0.441,0.602,0.513,37.958
+P102,23,0.583,0.751,0.676,43.283
+P103,28,0.723,0.899,0.805,47.982
