@@ -47,6 +47,36 @@ def check_not_zero_file_length(file_for_check: str) -> bool:
     return os.path.getsize(file_for_check) > 0
 
 
+def write_csv_report(report_filename: str, report_rows: list[dict]) -> None:
+    fieldnames = [
+        "pump_id",
+        "count",
+        "pressure_min",
+        "pressure_max",
+        "pressure_avg",
+        "temperature_avg",
+    ]
+    with open(report_filename, "w", encoding="utf-8", newline="") as report_pumps_csv:
+        writer_to_file = csv.DictWriter(report_pumps_csv, fieldnames=fieldnames)
+        writer_to_file.writeheader()
+        for row in report_rows:
+            writer_to_file.writerow(row)
+
+
+def write_fieldnames_to_csv_report(report_filename: str) -> None:
+    fieldnames = [
+        "pump_id",
+        "count",
+        "pressure_min",
+        "pressure_max",
+        "pressure_avg",
+        "temperature_avg",
+    ]
+    with open(report_filename, "w", encoding="utf-8", newline="") as report_pumps_csv:
+        writer_to_file = csv.DictWriter(report_pumps_csv, fieldnames=fieldnames)
+        writer_to_file.writeheader()
+
+
 def is_number(value: str) -> bool:
     try:
         if (float(value) == math.inf) or (float(value) == -math.inf):
@@ -179,7 +209,7 @@ def check_columns(data_for_check) -> bool:
     return not column_counter < (min_num_of_columns)  # Возвращает True или False
 
 
-def main(file_for_cheking: str) -> None:
+def main(report_filename: str, file_for_cheking: str) -> None:
     """
     Entry point for the CSV project.
     This function initializes the application and starts the main process.
@@ -253,6 +283,7 @@ def main(file_for_cheking: str) -> None:
     uniq_pump_id = list(
         {row["pump_id"] for row in clear_rows}
     )  # this is Set (It cintains unique values)
+    uniq_pump_id.sort()
     print(uniq_pump_id)
     sorted_rows_float = copy.deepcopy(clear_rows)
     for i, row in enumerate(clear_rows):
@@ -262,8 +293,10 @@ def main(file_for_cheking: str) -> None:
     # for row in sorted_rows_float:
     #     print(row)
 
+    report_rows: list[dict] = []
     for pump_id in uniq_pump_id:
         # print("***")
+        report_row: dict = {}
         pump_id_records: list[dict] = list(
             filter(lambda x: x["pump_id"] == pump_id, sorted_rows_float)
         )
@@ -274,26 +307,39 @@ def main(file_for_cheking: str) -> None:
             print(f"Корректные данные по насосному агрегату {pump_id} отсутсвуют.")
             continue
         print(f"Данные по НА: {pump_id}")
+        report_row["pump_id"] = pump_id
         print(f"Количество корректных измерений: {number_of_dimensions} шт.")
+        report_row["count"] = number_of_dimensions
         min_pressure = min(pump_id_records, key=lambda x: x["pressure_mpa"])
         print(
             f"Минимальное давление: {min_pressure['pressure_mpa']} МПа в {min_pressure['timestamp']}"
         )
+        report_row["pressure_min"] = min_pressure["pressure_mpa"]
         max_pressure = max(pump_id_records, key=lambda x: x["pressure_mpa"])
         print(
             f"Максимальное давление: {max_pressure['pressure_mpa']} Мпа в {max_pressure['timestamp']}"
         )
+        report_row["pressure_max"] = max_pressure["pressure_mpa"]
         pumps_pressuries: list[float] = [d["pressure_mpa"] for d in pump_id_records]
         average_pressure: float = round(
             sum(pumps_pressuries) / len(pumps_pressuries), 3
         )
         print(f"Среднее давление: {average_pressure} МПа")
+        report_row["pressure_avg"] = average_pressure
 
         pumps_temperatures: list[float] = [d["temperature_c"] for d in pump_id_records]
         average_temperature: float = round(
             sum(pumps_temperatures) / len(pumps_temperatures), 3
         )
         print(f"Средняя температура: {average_temperature} \u2103")
+        report_row["temperature_avg"] = average_temperature
+        print(report_row)
+        report_rows.append(report_row)
+
+        if report_row:
+            write_csv_report(report_filename, report_rows=report_rows)
+    for row in report_rows:
+        print(row)
 
 
 if __name__ == "__main__":
@@ -304,7 +350,8 @@ if __name__ == "__main__":
         input_csv_file: str = (
             "src/csv_project/csv_training_tz01/measurements_minor_errors.csv"
         )
-        main(input_csv_file)
+        report_filename: str = "pump_report.csv"
+        main(report_filename, input_csv_file)
     except FileNotFoundError as err:
         print(f"Файл с данными для проверки не найден.\nОшибка: {err.strerror}")
         print(f"Расположение: {input_csv_file}")
