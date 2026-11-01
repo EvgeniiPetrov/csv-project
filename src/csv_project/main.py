@@ -340,6 +340,12 @@ def main(report_filename: str, file_for_cheking: str) -> None:
         write_csv_report(report_filename, report_rows=report_rows)
     for row in report_rows:
         print(row)
+    print("Processing completed.")
+    print(f"Total records: {read_measurements_at_file}")
+    print(f"Valid records: {len(clear_rows)}")
+    print(f"Rejected records: {len(position_of_wrong_rows)}")
+    print(f"Pumps found: {len(uniq_pump_id)}")
+    print(f"Report saved: {report_filename}")
 
 
 if __name__ == "__main__":
