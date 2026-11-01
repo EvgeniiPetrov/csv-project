@@ -336,8 +336,8 @@ def main(report_filename: str, file_for_cheking: str) -> None:
         print(report_row)
         report_rows.append(report_row)
 
-        if report_row:
-            write_csv_report(report_filename, report_rows=report_rows)
+    if report_rows:
+        write_csv_report(report_filename, report_rows=report_rows)
     for row in report_rows:
         print(row)
 
@@ -350,7 +350,7 @@ if __name__ == "__main__":
         input_csv_file: str = (
             "src/csv_project/csv_training_tz01/measurements_minor_errors.csv"
         )
-        report_filename: str = "pump_report.csv"
+        report_filename: str = "report.csv"
         main(report_filename, input_csv_file)
     except FileNotFoundError as err:
         print(f"Файл с данными для проверки не найден.\nОшибка: {err.strerror}")
